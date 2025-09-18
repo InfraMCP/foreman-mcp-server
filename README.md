@@ -28,8 +28,34 @@ Set the following environment variables:
 
 - `FOREMAN_URL`: Base URL of your Foreman instance (e.g., `https://foreman.example.com`)
 - `FOREMAN_USERNAME`: Foreman username
-- `FOREMAN_PASSWORD`: Foreman password
+- `FOREMAN_PASSWORD`: **Personal Access Token** (not your web login password - create this in User Administration → Personal Access Tokens)
 - `FOREMAN_VERIFY_SSL`: Whether to verify SSL certificates (default: `true`)
+
+### Required Permissions
+
+The user account needs the following minimum permissions to use all MCP server tools:
+
+| Resource Type | Permission | Purpose |
+|---------------|------------|---------|
+| Host | `view_hosts` | List and search hosts, get host details and status |
+| Organization | `view_organizations` | List organizations |
+| Location | `view_locations` | List locations |
+| Hostgroup | `view_hostgroups` | List and search by hostgroups |
+| Subnet | `view_subnets` | List subnets and get subnet details |
+| Domain | `view_domains` | List domains and get domain details |
+| SmartProxy | `view_smart_proxies` | List smart proxies and get proxy details |
+
+### Recommended Roles
+
+Instead of assigning individual permissions, you can use these built-in roles:
+
+| Role | Description | Recommended For |
+|------|-------------|-----------------|
+| **Viewer** | Read-only access to most Foreman resources | General monitoring and inventory queries |
+| **Ansible Tower Inventory Reader** | Specific permissions for inventory access | Automated systems integration |
+| **Organization admin** | Full access within assigned organizations | Organization-specific administration |
+
+**Note**: The "Viewer" role provides the most appropriate permissions for this MCP server's read-only operations.
 
 ## MCP Configuration
 
