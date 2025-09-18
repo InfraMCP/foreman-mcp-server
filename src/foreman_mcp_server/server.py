@@ -79,8 +79,95 @@ def search_hosts_by_os(os_name: str, per_page: int = 20) -> dict:
 
 @mcp.tool()
 def search_hosts_by_environment(environment: str, per_page: int = 20) -> dict:
-    """Search hosts by environment (e.g., 'production', 'development')"""
+    """Search hosts by environment (e.g., 'production', 'development')."""
     search_query = f"environment = {environment}"
+    return list_hosts(search=search_query, per_page=per_page)
+
+
+@mcp.tool()
+def list_organizations(per_page: int = 20) -> dict:
+    """List all organizations in Foreman."""
+    try:
+        config = get_foreman_config()
+        url = f"{config['base_url']}/katello/api/organizations"
+        
+        params = {'per_page': per_page}
+        
+        response = requests.get(url, auth=config['auth'], params=params,
+                              verify=config['verify_ssl'], timeout=30)
+        response.raise_for_status()
+        
+        return response.json()
+        
+    except Exception as e:
+        return {"error": f"Failed to list organizations: {str(e)}"}
+
+
+@mcp.tool()
+def list_locations(per_page: int = 50) -> dict:
+    """List all locations in Foreman."""
+    try:
+        config = get_foreman_config()
+        url = f"{config['base_url']}/api/locations"
+        
+        params = {'per_page': per_page}
+        
+        response = requests.get(url, auth=config['auth'], params=params,
+                              verify=config['verify_ssl'], timeout=30)
+        response.raise_for_status()
+        
+        return response.json()
+        
+    except Exception as e:
+        return {"error": f"Failed to list locations: {str(e)}"}
+
+
+@mcp.tool()
+def list_hostgroups(per_page: int = 50) -> dict:
+    """List all hostgroups in Foreman."""
+    try:
+        config = get_foreman_config()
+        url = f"{config['base_url']}/api/hostgroups"
+        
+        params = {'per_page': per_page}
+        
+        response = requests.get(url, auth=config['auth'], params=params,
+                              verify=config['verify_ssl'], timeout=30)
+        response.raise_for_status()
+        
+        return response.json()
+        
+    except Exception as e:
+        return {"error": f"Failed to list hostgroups: {str(e)}"}
+
+
+@mcp.tool()
+def search_hosts_by_hostgroup(hostgroup: str, per_page: int = 20) -> dict:
+    """Search hosts by hostgroup name or title."""
+    search_query = f"hostgroup ~ {hostgroup}"
+    return list_hosts(search=search_query, per_page=per_page)
+
+
+@mcp.tool()
+def get_host_status(host_id: str) -> dict:
+    """Get status information for a specific host."""
+    try:
+        config = get_foreman_config()
+        url = f"{config['base_url']}/api/hosts/{host_id}/status"
+        
+        response = requests.get(url, auth=config['auth'], verify=config['verify_ssl'], timeout=30)
+        response.raise_for_status()
+        
+        return response.json()
+        
+    except Exception as e:
+        return {"error": f"Failed to get host status for {host_id}: {str(e)}"}
+
+
+@mcp.tool()
+def search_hosts_by_fact(fact_name: str, fact_value: str, per_page: int = 20) -> dict:
+    """Search hosts by a specific fact name and value."""
+    search_query = f"facts.{fact_name} = {fact_value}"
     return list_hosts(search=search_query, per_page=per_page)
 
 def main() -> None:

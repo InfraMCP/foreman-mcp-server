@@ -41,3 +41,14 @@ def test_get_foreman_config_missing_credentials():
     }, clear=True):
         with pytest.raises(ValueError, match="FOREMAN_USERNAME and FOREMAN_PASSWORD"):
             get_foreman_config()
+
+
+def test_get_foreman_config_default_ssl():
+    """Test configuration with default SSL verification."""
+    with patch.dict(os.environ, {
+        'FOREMAN_URL': 'https://foreman.example.com',
+        'FOREMAN_USERNAME': 'testuser',
+        'FOREMAN_PASSWORD': 'testpass'
+    }):
+        config = get_foreman_config()
+        assert config['verify_ssl'] is True

@@ -51,11 +51,22 @@ Add to your MCP client configuration:
 
 ## Available Tools
 
+### Host Management
 - `list_hosts(search, per_page, page)` - List hosts with optional search
 - `get_host(host_id)` - Get detailed host information
+- `get_host_status(host_id)` - Get status information for a specific host
+
+### Host Search Functions
 - `search_hosts_by_location(location, per_page)` - Search by location
 - `search_hosts_by_os(os_name, per_page)` - Search by operating system
 - `search_hosts_by_environment(environment, per_page)` - Search by environment
+- `search_hosts_by_hostgroup(hostgroup, per_page)` - Search by hostgroup
+- `search_hosts_by_fact(fact_name, fact_value, per_page)` - Search by custom facts
+
+### Infrastructure Information
+- `list_organizations(per_page)` - List all organizations
+- `list_locations(per_page)` - List all locations
+- `list_hostgroups(per_page)` - List all hostgroups
 
 ## Development
 
