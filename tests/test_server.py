@@ -8,7 +8,7 @@ from unittest.mock import patch, MagicMock
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
-from foreman_mcp_server import get_foreman_config
+from foreman_mcp_server.server import get_foreman_config
 
 
 def test_get_foreman_config_success():

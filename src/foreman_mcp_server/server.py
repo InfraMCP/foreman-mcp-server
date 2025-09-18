@@ -83,5 +83,10 @@ def search_hosts_by_environment(environment: str, per_page: int = 20) -> dict:
     search_query = f"environment = {environment}"
     return list_hosts(search=search_query, per_page=per_page)
 
-if __name__ == "__main__":
+def main() -> None:
+    """Main entry point for the server."""
     mcp.run()
+
+
+if __name__ == "__main__":
+    main()
