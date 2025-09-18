@@ -67,6 +67,12 @@ Add to your MCP client configuration:
 - `list_organizations(per_page)` - List all organizations
 - `list_locations(per_page)` - List all locations
 - `list_hostgroups(per_page)` - List all hostgroups
+- `list_subnets(per_page)` - List all subnets
+- `get_subnet(subnet_id)` - Get detailed subnet information
+- `list_domains(per_page)` - List all domains
+- `get_domain(domain_id)` - Get detailed domain information
+- `list_smart_proxies(per_page)` - List all smart proxies
+- `get_smart_proxy(proxy_id)` - Get detailed smart proxy information
 
 ## Development
 
