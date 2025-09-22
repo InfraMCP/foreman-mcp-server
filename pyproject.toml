@@ -10,6 +10,10 @@ authors = [{name = "Rory McMahon", email = "rory.mcmahon@vocus.com.au"}]
 license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.8"
+dependencies = [
+    "mcp>=1.0.0",
+    "requests>=2.25.0",
+]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -27,11 +31,6 @@ keywords = ["mcp", "foreman", "infrastructure", "automation"]
 Homepage = "https://github.com/rorymcmahon/foreman-mcp-server"
 Repository = "https://github.com/rorymcmahon/foreman-mcp-server"
 Issues = "https://github.com/rorymcmahon/foreman-mcp-server/issues"
-
-dependencies = [
-    "mcp>=1.0.0",
-    "requests>=2.25.0",
-]
 
 [project.optional-dependencies]
 dev = [
