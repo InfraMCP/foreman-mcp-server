@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "foreman-mcp-server"
-version = "0.2.1"
+version = "0.2.2"
 description = "MCP server for Foreman host management and infrastructure automation"
 authors = [{name = "Rory McMahon", email = "rory.mcmahon@vocus.com.au"}]
 license = {text = "MIT"}
