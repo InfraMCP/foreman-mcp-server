@@ -6,10 +6,28 @@ build-backend = "setuptools.build_meta"
 name = "foreman-mcp-server"
 version = "0.2.0"
 description = "MCP server for Foreman host management and infrastructure automation"
-authors = [{name = "Rory McMahon", email = "rory.mcmahon@example.com"}]
+authors = [{name = "Rory McMahon", email = "rory.mcmahon@vocus.com.au"}]
 license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+keywords = ["mcp", "foreman", "infrastructure", "automation"]
+
+[project.urls]
+Homepage = "https://github.com/rorymcmahon/foreman-mcp-server"
+Repository = "https://github.com/rorymcmahon/foreman-mcp-server"
+Issues = "https://github.com/rorymcmahon/foreman-mcp-server/issues"
+
 dependencies = [
     "mcp>=1.0.0",
     "requests>=2.25.0",
@@ -22,6 +40,8 @@ dev = [
     "black>=22.0.0",
     "isort>=5.0.0",
     "mypy>=1.0.0",
+    "build>=0.10.0",
+    "twine>=4.0.0",
 ]
 
 [project.scripts]
