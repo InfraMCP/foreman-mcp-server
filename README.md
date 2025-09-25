@@ -11,16 +11,18 @@ MCP server for Foreman host management and infrastructure automation.
 
 ## Installation
 
+### From PyPI (Recommended)
+
 ```bash
-pip install git+https://github.com/rorymcmahon/foreman-mcp-server.git
+pip install foreman-mcp-server
 ```
 
-Or for development:
+### From Source
+
 ```bash
 git clone https://github.com/rorymcmahon/foreman-mcp-server.git
 cd foreman-mcp-server
 pip install -e .
-```
 
 ## Configuration
 
