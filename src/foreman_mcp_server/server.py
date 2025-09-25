@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Foreman MCP Server - Provides Foreman API access through MCP protocol."""
 
 import os
 import requests
@@ -14,12 +15,12 @@ def get_foreman_config():
     username = os.getenv('FOREMAN_USERNAME')
     password = os.getenv('FOREMAN_PASSWORD')
     verify_ssl = os.getenv('FOREMAN_VERIFY_SSL', 'true').lower() == 'true'
-    
+
     if not base_url:
         raise ValueError("FOREMAN_URL environment variable is required")
     if not username or not password:
         raise ValueError("FOREMAN_USERNAME and FOREMAN_PASSWORD environment variables are required")
-    
+
     return {
         'base_url': base_url.rstrip('/'),
         'auth': HTTPBasicAuth(username, password),
@@ -32,22 +33,22 @@ def list_hosts(search: str = "", per_page: int = 20, page: int = 1) -> dict:
     try:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/v2/hosts"
-        
+
         params = {
             'per_page': per_page,
             'page': page
         }
-        
+
         if search:
             params['search'] = search
-            
-        response = requests.get(url, auth=config['auth'], params=params, 
+
+        response = requests.get(url, auth=config['auth'], params=params,
                               verify=config['verify_ssl'], timeout=30)
         response.raise_for_status()
-        
+
         return response.json()
-        
-    except Exception as e:
+
+    except (requests.RequestException, ValueError) as e:
         return {"error": f"Failed to list hosts: {str(e)}"}
 
 @mcp.tool()
@@ -56,13 +57,13 @@ def get_host(host_id: str) -> dict:
     try:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/v2/hosts/{host_id}"
-        
+
         response = requests.get(url, auth=config['auth'], verify=config['verify_ssl'], timeout=30)
         response.raise_for_status()
-        
+
         return response.json()
-        
-    except Exception as e:
+
+    except (requests.RequestException, ValueError) as e:
         return {"error": f"Failed to get host {host_id}: {str(e)}"}
 
 @mcp.tool()
@@ -90,16 +91,16 @@ def list_organizations(per_page: int = 20) -> dict:
     try:
         config = get_foreman_config()
         url = f"{config['base_url']}/katello/api/organizations"
-        
+
         params = {'per_page': per_page}
-        
+
         response = requests.get(url, auth=config['auth'], params=params,
                               verify=config['verify_ssl'], timeout=30)
         response.raise_for_status()
-        
+
         return response.json()
-        
-    except Exception as e:
+
+    except (requests.RequestException, ValueError) as e:
         return {"error": f"Failed to list organizations: {str(e)}"}
 
 
@@ -109,16 +110,16 @@ def list_locations(per_page: int = 50) -> dict:
     try:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/locations"
-        
+
         params = {'per_page': per_page}
-        
+
         response = requests.get(url, auth=config['auth'], params=params,
                               verify=config['verify_ssl'], timeout=30)
         response.raise_for_status()
-        
+
         return response.json()
-        
-    except Exception as e:
+
+    except (requests.RequestException, ValueError) as e:
         return {"error": f"Failed to list locations: {str(e)}"}
 
 
@@ -128,16 +129,16 @@ def list_hostgroups(per_page: int = 50) -> dict:
     try:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/hostgroups"
-        
+
         params = {'per_page': per_page}
-        
+
         response = requests.get(url, auth=config['auth'], params=params,
                               verify=config['verify_ssl'], timeout=30)
         response.raise_for_status()
-        
+
         return response.json()
-        
-    except Exception as e:
+
+    except (requests.RequestException, ValueError) as e:
         return {"error": f"Failed to list hostgroups: {str(e)}"}
 
 
@@ -154,13 +155,13 @@ def get_host_status(host_id: str) -> dict:
     try:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/hosts/{host_id}/status"
-        
+
         response = requests.get(url, auth=config['auth'], verify=config['verify_ssl'], timeout=30)
         response.raise_for_status()
-        
+
         return response.json()
-        
-    except Exception as e:
+
+    except (requests.RequestException, ValueError) as e:
         return {"error": f"Failed to get host status for {host_id}: {str(e)}"}
 
 
@@ -177,16 +178,16 @@ def list_subnets(per_page: int = 50) -> dict:
     try:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/subnets"
-        
+
         params = {'per_page': per_page}
-        
+
         response = requests.get(url, auth=config['auth'], params=params,
                               verify=config['verify_ssl'], timeout=30)
         response.raise_for_status()
-        
+
         return response.json()
-        
-    except Exception as e:
+
+    except (requests.RequestException, ValueError) as e:
         return {"error": f"Failed to list subnets: {str(e)}"}
 
 
@@ -196,13 +197,13 @@ def get_subnet(subnet_id: str) -> dict:
     try:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/subnets/{subnet_id}"
-        
+
         response = requests.get(url, auth=config['auth'], verify=config['verify_ssl'], timeout=30)
         response.raise_for_status()
-        
+
         return response.json()
-        
-    except Exception as e:
+
+    except (requests.RequestException, ValueError) as e:
         return {"error": f"Failed to get subnet {subnet_id}: {str(e)}"}
 
 
@@ -212,16 +213,16 @@ def list_domains(per_page: int = 50) -> dict:
     try:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/domains"
-        
+
         params = {'per_page': per_page}
-        
+
         response = requests.get(url, auth=config['auth'], params=params,
                               verify=config['verify_ssl'], timeout=30)
         response.raise_for_status()
-        
+
         return response.json()
-        
-    except Exception as e:
+
+    except (requests.RequestException, ValueError) as e:
         return {"error": f"Failed to list domains: {str(e)}"}
 
 
@@ -231,13 +232,13 @@ def get_domain(domain_id: str) -> dict:
     try:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/domains/{domain_id}"
-        
+
         response = requests.get(url, auth=config['auth'], verify=config['verify_ssl'], timeout=30)
         response.raise_for_status()
-        
+
         return response.json()
-        
-    except Exception as e:
+
+    except (requests.RequestException, ValueError) as e:
         return {"error": f"Failed to get domain {domain_id}: {str(e)}"}
 
 
@@ -247,16 +248,16 @@ def list_smart_proxies(per_page: int = 50) -> dict:
     try:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/smart_proxies"
-        
+
         params = {'per_page': per_page}
-        
+
         response = requests.get(url, auth=config['auth'], params=params,
                               verify=config['verify_ssl'], timeout=30)
         response.raise_for_status()
-        
+
         return response.json()
-        
-    except Exception as e:
+
+    except (requests.RequestException, ValueError) as e:
         return {"error": f"Failed to list smart proxies: {str(e)}"}
 
 
@@ -266,13 +267,13 @@ def get_smart_proxy(proxy_id: str) -> dict:
     try:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/smart_proxies/{proxy_id}"
-        
+
         response = requests.get(url, auth=config['auth'], verify=config['verify_ssl'], timeout=30)
         response.raise_for_status()
-        
+
         return response.json()
-        
-    except Exception as e:
+
+    except (requests.RequestException, ValueError) as e:
         return {"error": f"Failed to get smart proxy {proxy_id}: {str(e)}"}
 
 def main() -> None:
