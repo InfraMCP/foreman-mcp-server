@@ -108,3 +108,8 @@ Add to your MCP client configuration:
 pip install -e ".[dev]"
 pytest
 ```
+
+## Support
+
+- [GitHub Issues](https://github.com/rorymcmahon/foreman-mcp-server/issues)
+- [Changelog](CHANGELOG.md)
