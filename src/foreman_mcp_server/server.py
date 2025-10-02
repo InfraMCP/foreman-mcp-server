@@ -276,6 +276,111 @@ def get_smart_proxy(proxy_id: str) -> dict:
     except (requests.RequestException, ValueError) as e:
         return {"error": f"Failed to get smart proxy {proxy_id}: {str(e)}"}
 
+
+@mcp.tool()
+def list_operatingsystems(per_page: int = 50) -> dict:
+    """List all operating systems in Foreman."""
+    try:
+        config = get_foreman_config()
+        url = f"{config['base_url']}/api/v2/operatingsystems"
+
+        params = {'per_page': per_page}
+
+        response = requests.get(url, auth=config['auth'], params=params,
+                              verify=config['verify_ssl'], timeout=30)
+        response.raise_for_status()
+
+        return response.json()
+
+    except (requests.RequestException, ValueError) as e:
+        return {"error": f"Failed to list operating systems: {str(e)}"}
+
+
+@mcp.tool()
+def get_operatingsystem(os_id: str) -> dict:
+    """Get detailed information about a specific operating system."""
+    try:
+        config = get_foreman_config()
+        url = f"{config['base_url']}/api/v2/operatingsystems/{os_id}"
+
+        response = requests.get(url, auth=config['auth'], verify=config['verify_ssl'], timeout=30)
+        response.raise_for_status()
+
+        return response.json()
+
+    except (requests.RequestException, ValueError) as e:
+        return {"error": f"Failed to get operating system {os_id}: {str(e)}"}
+
+
+@mcp.tool()
+def list_architectures(per_page: int = 50) -> dict:
+    """List all architectures in Foreman."""
+    try:
+        config = get_foreman_config()
+        url = f"{config['base_url']}/api/v2/architectures"
+
+        params = {'per_page': per_page}
+
+        response = requests.get(url, auth=config['auth'], params=params,
+                              verify=config['verify_ssl'], timeout=30)
+        response.raise_for_status()
+
+        return response.json()
+
+    except (requests.RequestException, ValueError) as e:
+        return {"error": f"Failed to list architectures: {str(e)}"}
+
+
+@mcp.tool()
+def get_architecture(arch_id: str) -> dict:
+    """Get detailed information about a specific architecture."""
+    try:
+        config = get_foreman_config()
+        url = f"{config['base_url']}/api/v2/architectures/{arch_id}"
+
+        response = requests.get(url, auth=config['auth'], verify=config['verify_ssl'], timeout=30)
+        response.raise_for_status()
+
+        return response.json()
+
+    except (requests.RequestException, ValueError) as e:
+        return {"error": f"Failed to get architecture {arch_id}: {str(e)}"}
+
+
+@mcp.tool()
+def list_media(per_page: int = 50) -> dict:
+    """List all installation media in Foreman."""
+    try:
+        config = get_foreman_config()
+        url = f"{config['base_url']}/api/v2/media"
+
+        params = {'per_page': per_page}
+
+        response = requests.get(url, auth=config['auth'], params=params,
+                              verify=config['verify_ssl'], timeout=30)
+        response.raise_for_status()
+
+        return response.json()
+
+    except (requests.RequestException, ValueError) as e:
+        return {"error": f"Failed to list media: {str(e)}"}
+
+
+@mcp.tool()
+def get_media(media_id: str) -> dict:
+    """Get detailed information about a specific installation media."""
+    try:
+        config = get_foreman_config()
+        url = f"{config['base_url']}/api/v2/media/{media_id}"
+
+        response = requests.get(url, auth=config['auth'], verify=config['verify_ssl'], timeout=30)
+        response.raise_for_status()
+
+        return response.json()
+
+    except (requests.RequestException, ValueError) as e:
+        return {"error": f"Failed to get media {media_id}: {str(e)}"}
+
 def main() -> None:
     """Main entry point for the server."""
     mcp.run()

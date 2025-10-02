@@ -102,6 +102,14 @@ Add to your MCP client configuration:
 - `list_smart_proxies(per_page)` - List all smart proxies
 - `get_smart_proxy(proxy_id)` - Get detailed smart proxy information
 
+### OS Management
+- `list_operatingsystems(per_page)` - List all operating systems
+- `get_operatingsystem(os_id)` - Get detailed operating system information
+- `list_architectures(per_page)` - List all architectures
+- `get_architecture(arch_id)` - Get detailed architecture information
+- `list_media(per_page)` - List all installation media
+- `get_media(media_id)` - Get detailed installation media information
+
 ## Development
 
 ```bash
