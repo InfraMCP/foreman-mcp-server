@@ -110,6 +110,14 @@ Add to your MCP client configuration:
 - `list_media(per_page)` - List all installation media
 - `get_media(media_id)` - Get detailed installation media information
 
+### Content Management
+- `list_content_views(per_page)` - List all content views
+- `get_content_view(cv_id)` - Get detailed content view information
+- `list_repositories(per_page)` - List all repositories
+- `get_repository(repo_id)` - Get detailed repository information
+- `list_lifecycle_environments(per_page)` - List all lifecycle environments
+- `get_lifecycle_environment(env_id)` - Get detailed lifecycle environment information
+
 ## Development
 
 ```bash
