@@ -45,7 +45,7 @@ jobs:
     
     - name: Run safety check
       run: |
-        safety check --json > safety-report.json || true
+        safety check --json --output safety-report.json || echo '[]' > safety-report.json
         
     - name: Run pip-audit
       run: |
@@ -73,17 +73,24 @@ jobs:
           
           // Check if safety report exists and has vulnerabilities
           try {
-            const safetyData = JSON.parse(fs.readFileSync('safety-report.json', 'utf8'));
-            if (safetyData.length > 0) {
-              comment += '⚠️ **Security vulnerabilities found by Safety:**\n';
-              safetyData.forEach(vuln => {
-                comment += `- ${vuln.package_name} v${vuln.installed_version}: ${vuln.advisory}\n`;
-              });
+            if (!fs.existsSync('safety-report.json')) {
+              comment += '❓ Safety report file not found\n';
             } else {
-              comment += '✅ No known vulnerabilities found by Safety\n';
+              const safetyContent = fs.readFileSync('safety-report.json', 'utf8');
+              console.log('Safety report content:', safetyContent);
+              const safetyData = JSON.parse(safetyContent);
+              if (Array.isArray(safetyData) && safetyData.length > 0) {
+                comment += '⚠️ **Security vulnerabilities found by Safety:**\n';
+                safetyData.forEach(vuln => {
+                  comment += `- ${vuln.package_name || vuln.package} v${vuln.installed_version || vuln.version}: ${vuln.advisory || vuln.vulnerability_id}\n`;
+                });
+              } else {
+                comment += '✅ No known vulnerabilities found by Safety\n';
+              }
             }
           } catch (e) {
-            comment += '❓ Safety check results unavailable\n';
+            comment += `❓ Safety check error: ${e.message}\n`;
+            console.error('Safety report error:', e);
           }
           
           comment += '\n📋 Full dependency report available in workflow artifacts.\n';
