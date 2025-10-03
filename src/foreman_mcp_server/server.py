@@ -381,6 +381,111 @@ def get_media(media_id: str) -> dict:
     except (requests.RequestException, ValueError) as e:
         return {"error": f"Failed to get media {media_id}: {str(e)}"}
 
+
+@mcp.tool()
+def list_content_views(per_page: int = 50) -> dict:
+    """List all content views in Foreman/Katello."""
+    try:
+        config = get_foreman_config()
+        url = f"{config['base_url']}/katello/api/content_views"
+
+        params = {'per_page': per_page}
+
+        response = requests.get(url, auth=config['auth'], params=params,
+                              verify=config['verify_ssl'], timeout=30)
+        response.raise_for_status()
+
+        return response.json()
+
+    except (requests.RequestException, ValueError) as e:
+        return {"error": f"Failed to list content views: {str(e)}"}
+
+
+@mcp.tool()
+def get_content_view(cv_id: str) -> dict:
+    """Get detailed information about a specific content view."""
+    try:
+        config = get_foreman_config()
+        url = f"{config['base_url']}/katello/api/content_views/{cv_id}"
+
+        response = requests.get(url, auth=config['auth'], verify=config['verify_ssl'], timeout=30)
+        response.raise_for_status()
+
+        return response.json()
+
+    except (requests.RequestException, ValueError) as e:
+        return {"error": f"Failed to get content view {cv_id}: {str(e)}"}
+
+
+@mcp.tool()
+def list_repositories(per_page: int = 50) -> dict:
+    """List all repositories in Foreman/Katello."""
+    try:
+        config = get_foreman_config()
+        url = f"{config['base_url']}/katello/api/repositories"
+
+        params = {'per_page': per_page}
+
+        response = requests.get(url, auth=config['auth'], params=params,
+                              verify=config['verify_ssl'], timeout=30)
+        response.raise_for_status()
+
+        return response.json()
+
+    except (requests.RequestException, ValueError) as e:
+        return {"error": f"Failed to list repositories: {str(e)}"}
+
+
+@mcp.tool()
+def get_repository(repo_id: str) -> dict:
+    """Get detailed information about a specific repository."""
+    try:
+        config = get_foreman_config()
+        url = f"{config['base_url']}/katello/api/repositories/{repo_id}"
+
+        response = requests.get(url, auth=config['auth'], verify=config['verify_ssl'], timeout=30)
+        response.raise_for_status()
+
+        return response.json()
+
+    except (requests.RequestException, ValueError) as e:
+        return {"error": f"Failed to get repository {repo_id}: {str(e)}"}
+
+
+@mcp.tool()
+def list_lifecycle_environments(per_page: int = 50) -> dict:
+    """List all lifecycle environments in Foreman/Katello."""
+    try:
+        config = get_foreman_config()
+        url = f"{config['base_url']}/katello/api/environments"
+
+        params = {'per_page': per_page}
+
+        response = requests.get(url, auth=config['auth'], params=params,
+                              verify=config['verify_ssl'], timeout=30)
+        response.raise_for_status()
+
+        return response.json()
+
+    except (requests.RequestException, ValueError) as e:
+        return {"error": f"Failed to list lifecycle environments: {str(e)}"}
+
+
+@mcp.tool()
+def get_lifecycle_environment(env_id: str) -> dict:
+    """Get detailed information about a specific lifecycle environment."""
+    try:
+        config = get_foreman_config()
+        url = f"{config['base_url']}/katello/api/environments/{env_id}"
+
+        response = requests.get(url, auth=config['auth'], verify=config['verify_ssl'], timeout=30)
+        response.raise_for_status()
+
+        return response.json()
+
+    except (requests.RequestException, ValueError) as e:
+        return {"error": f"Failed to get lifecycle environment {env_id}: {str(e)}"}
+
 def main() -> None:
     """Main entry point for the server."""
     mcp.run()
