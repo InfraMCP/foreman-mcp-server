@@ -1,5 +1,11 @@
 # Foreman MCP Server
 
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Pylint](https://github.com/InfraMCP/foreman-mcp-server/actions/workflows/pylint.yml/badge.svg)](https://github.com/InfraMCP/foreman-mcp-server/actions/workflows/pylint.yml)
+[![Safety Security Scan](https://github.com/InfraMCP/foreman-mcp-server/actions/workflows/safety-scan.yml/badge.svg)](https://github.com/InfraMCP/foreman-mcp-server/actions/workflows/safety-scan.yml)
+[![Dependency Security Check](https://github.com/InfraMCP/foreman-mcp-server/actions/workflows/dependency-security.yml/badge.svg)](https://github.com/InfraMCP/foreman-mcp-server/actions/workflows/dependency-security.yml)
+
 MCP server for Foreman host management and infrastructure automation.
 
 ## Features
