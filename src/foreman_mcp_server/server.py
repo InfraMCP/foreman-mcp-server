@@ -583,13 +583,23 @@ def get_repository(repo_id: str) -> dict:
 
 
 @mcp.tool()
-def list_lifecycle_environments(per_page: int = 15) -> dict:
-    """List all lifecycle environments in Foreman/Katello.
-    
-    CONTEXT OPTIMIZATION: 16 total environments. Safe for context window."""
+def list_lifecycle_environments(organization_id: str, per_page: int = 15,
+                               include_fields: str = "") -> dict:
+    """List all lifecycle environments for a specific organization in Foreman/Katello.
+
+    CONTEXT OPTIMIZATION: 16 total environments. Safe for context window.
+
+    Args:
+        organization_id: Required numeric organization ID (e.g., "1", "4").
+                        Organization names are not supported by this endpoint.
+        per_page: Number of results per page.
+        include_fields: Field filtering options.
+
+    Field filtering: By default returns essential fields only (id, name, description, library).
+    Use include_fields="all" for complete data, or specify comma-separated fields."""
     try:
         config = get_foreman_config()
-        url = f"{config['base_url']}/katello/api/environments"
+        url = f"{config['base_url']}/katello/api/organizations/{organization_id}/environments"
 
         params = {'per_page': per_page}
 
@@ -597,10 +607,29 @@ def list_lifecycle_environments(per_page: int = 15) -> dict:
                               verify=config['verify_ssl'], timeout=30)
         response.raise_for_status()
 
-        return response.json()
+        result = response.json()
+
+        # Apply field filtering to reduce context window usage
+        if include_fields == "all":
+            # Return all fields
+            pass
+        elif include_fields:
+            # Return specified fields
+            fields = [f.strip() for f in include_fields.split(',')]
+            result['results'] = filter_fields(result['results'], include_fields=fields)
+        else:
+            # Default essential fields for lifecycle environments
+            essential_fields = [
+                'id', 'name', 'label', 'description', 'library',
+                'organization', 'prior', 'successor'
+            ]
+            result['results'] = filter_fields(result['results'], include_fields=essential_fields)
+
+        return result
 
     except (requests.RequestException, ValueError) as e:
-        return {"error": f"Failed to list lifecycle environments: {str(e)}"}
+        return {"error": f"Failed to list lifecycle environments for org "
+                         f"{organization_id}: {str(e)}"}
 
 
 @mcp.tool()
