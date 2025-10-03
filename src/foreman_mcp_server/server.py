@@ -27,13 +27,41 @@ def get_foreman_config():
         'verify_ssl': verify_ssl
     }
 
+def filter_fields(data, include_fields=None, exclude_fields=None):
+    """Filter fields from API response data to reduce context window usage.
+
+    Args:
+        data: API response data (dict or list of dicts)
+        include_fields: List of fields to keep (if specified, only these are kept)
+        exclude_fields: List of fields to remove (ignored if include_fields is specified)
+    """
+    if not isinstance(data, (dict, list)):
+        return data
+
+    def filter_single_item(item):
+        if not isinstance(item, dict):
+            return item
+
+        if include_fields:
+            return {k: v for k, v in item.items() if k in include_fields}
+        if exclude_fields:
+            return {k: v for k, v in item.items() if k not in exclude_fields}
+        return item
+
+    if isinstance(data, list):
+        return [filter_single_item(item) for item in data]
+    return filter_single_item(data)
+
 @mcp.tool()
-def list_hosts(search: str = "", per_page: int = 10, page: int = 1) -> dict:
-    """List hosts from Foreman with optional search filter.
-    
-    CONTEXT OPTIMIZATION: Default per_page=10 to prevent overflow. 
+def list_hosts(search: str = "", per_page: int = 10, page: int = 1, include_fields: str = "") -> dict:
+    """List hosts from Foreman with optional search filter and field filtering.
+
+    CONTEXT OPTIMIZATION: Default per_page=10 to prevent overflow.
     Use search filters like 'location ~ SYD03' or 'os ~ Windows' to narrow results.
     Total hosts available: ~1000+. Always use search parameter for large inventories.
+
+    Field filtering: By default returns essential fields only (id, name, ip, os, location, status).
+    Use include_fields="all" for complete data, or specify comma-separated fields like "id,name,ip,mac".
     """
     try:
         config = get_foreman_config()
@@ -51,7 +79,26 @@ def list_hosts(search: str = "", per_page: int = 10, page: int = 1) -> dict:
                               verify=config['verify_ssl'], timeout=30)
         response.raise_for_status()
 
-        return response.json()
+        result = response.json()
+        
+        # Apply field filtering to reduce context window usage
+        if include_fields == "all":
+            # Return all fields
+            pass
+        elif include_fields:
+            # Return specified fields
+            fields = [f.strip() for f in include_fields.split(',')]
+            result['results'] = filter_fields(result['results'], include_fields=fields)
+        else:
+            # Default essential fields for hosts
+            essential_fields = [
+                'id', 'name', 'ip', 'operatingsystem_name', 'location_name', 
+                'global_status_label', 'hostgroup_name', 'environment_name',
+                'last_report', 'build_status_label'
+            ]
+            result['results'] = filter_fields(result['results'], include_fields=essential_fields)
+
+        return result
 
     except (requests.RequestException, ValueError) as e:
         return {"error": f"Failed to list hosts: {str(e)}"}
@@ -418,11 +465,14 @@ def get_media(media_id: str) -> dict:
 
 
 @mcp.tool()
-def list_content_views(per_page: int = 10) -> dict:
-    """List all content views in Foreman/Katello.
+def list_content_views(per_page: int = 10, include_fields: str = "") -> dict:
+    """List all content views in Foreman/Katello with field filtering.
     
     CONTEXT OPTIMIZATION: 102 total content views! Use per_page=5-10 max.
-    Each content view has extensive metadata. Consider getting specific CV by ID."""
+    Each content view has extensive metadata. Consider getting specific CV by ID.
+    
+    Field filtering: By default returns essential fields only (id, name, version_count, latest_version).
+    Use include_fields="all" for complete data, or specify comma-separated fields."""
     try:
         config = get_foreman_config()
         url = f"{config['base_url']}/katello/api/content_views"
@@ -433,7 +483,25 @@ def list_content_views(per_page: int = 10) -> dict:
                               verify=config['verify_ssl'], timeout=30)
         response.raise_for_status()
 
-        return response.json()
+        result = response.json()
+        
+        # Apply field filtering to reduce context window usage
+        if include_fields == "all":
+            # Return all fields
+            pass
+        elif include_fields:
+            # Return specified fields
+            fields = [f.strip() for f in include_fields.split(',')]
+            result['results'] = filter_fields(result['results'], include_fields=fields)
+        else:
+            # Default essential fields for content views
+            essential_fields = [
+                'id', 'name', 'version_count', 'latest_version', 'composite',
+                'default', 'organization'
+            ]
+            result['results'] = filter_fields(result['results'], include_fields=essential_fields)
+
+        return result
 
     except (requests.RequestException, ValueError) as e:
         return {"error": f"Failed to list content views: {str(e)}"}
@@ -456,11 +524,14 @@ def get_content_view(cv_id: str) -> dict:
 
 
 @mcp.tool()
-def list_repositories(per_page: int = 5) -> dict:
-    """List all repositories in Foreman/Katello.
+def list_repositories(per_page: int = 5, include_fields: str = "") -> dict:
+    """List all repositories in Foreman/Katello with field filtering.
     
     ⚠️  CONTEXT WARNING: 258 total repositories with extensive metadata!
-    Use per_page=5 max or context will overflow. Consider specific repo searches."""
+    Use per_page=5 max or context will overflow. Consider specific repo searches.
+    
+    Field filtering: By default returns essential fields only (id, name, content_type, url, product).
+    Use include_fields="all" for complete data, or specify comma-separated fields."""
     try:
         config = get_foreman_config()
         url = f"{config['base_url']}/katello/api/repositories"
@@ -471,7 +542,25 @@ def list_repositories(per_page: int = 5) -> dict:
                               verify=config['verify_ssl'], timeout=30)
         response.raise_for_status()
 
-        return response.json()
+        result = response.json()
+        
+        # Apply field filtering to reduce context window usage
+        if include_fields == "all":
+            # Return all fields
+            pass
+        elif include_fields:
+            # Return specified fields
+            fields = [f.strip() for f in include_fields.split(',')]
+            result['results'] = filter_fields(result['results'], include_fields=fields)
+        else:
+            # Default essential fields for repositories
+            essential_fields = [
+                'id', 'name', 'content_type', 'url', 'product', 'content_view',
+                'last_sync', 'content_counts'
+            ]
+            result['results'] = filter_fields(result['results'], include_fields=essential_fields)
+
+        return result
 
     except (requests.RequestException, ValueError) as e:
         return {"error": f"Failed to list repositories: {str(e)}"}
