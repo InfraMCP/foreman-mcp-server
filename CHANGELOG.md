@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2025-10-03
+
+### Fixed
+- **BREAKING**: list_lifecycle_environments now properly requires organization_id parameter
+- Lifecycle environments now correctly organization-scoped using proper Katello API endpoints
+- Added missing field filtering support for lifecycle environments
+- Fixed API correctness issue where global endpoint was returning incomplete data
+
+### Notes
+This hotfix addresses a critical issue where the lifecycle environments organization-scoping 
+fix from v0.4.0 was missing from the PyPI release. Users must now provide organization_id 
+parameter to get accurate, organization-specific lifecycle environment data.
+
 ## [0.4.0] - 2025-10-03
 
 ### Added
