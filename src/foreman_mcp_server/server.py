@@ -2,6 +2,7 @@
 """Foreman MCP Server - Provides Foreman API access through MCP protocol."""
 
 import os
+from typing import Any
 
 import requests
 from mcp.server.fastmcp import FastMCP
@@ -76,7 +77,7 @@ def list_hosts(
         config = get_foreman_config()
         url = f"{config['base_url']}/api/v2/hosts"
 
-        params = {"per_page": per_page, "page": page}
+        params: dict[str, Any] = {"per_page": per_page, "page": page}
 
         if search:
             params["search"] = search
