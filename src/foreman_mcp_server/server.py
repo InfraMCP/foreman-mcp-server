@@ -2,30 +2,36 @@
 """Foreman MCP Server - Provides Foreman API access through MCP protocol."""
 
 import os
+from typing import Any
+
 import requests
-from requests.auth import HTTPBasicAuth
 from mcp.server.fastmcp import FastMCP
+from requests.auth import HTTPBasicAuth
 
 # Create MCP server
 mcp = FastMCP("Foreman Server")
 
+
 def get_foreman_config():
     """Get Foreman configuration from environment variables"""
-    base_url = os.getenv('FOREMAN_URL')
-    username = os.getenv('FOREMAN_USERNAME')
-    password = os.getenv('FOREMAN_PASSWORD')
-    verify_ssl = os.getenv('FOREMAN_VERIFY_SSL', 'true').lower() == 'true'
+    base_url = os.getenv("FOREMAN_URL")
+    username = os.getenv("FOREMAN_USERNAME")
+    password = os.getenv("FOREMAN_PASSWORD")
+    verify_ssl = os.getenv("FOREMAN_VERIFY_SSL", "true").lower() == "true"
 
     if not base_url:
         raise ValueError("FOREMAN_URL environment variable is required")
     if not username or not password:
-        raise ValueError("FOREMAN_USERNAME and FOREMAN_PASSWORD environment variables are required")
+        raise ValueError(
+            "FOREMAN_USERNAME and FOREMAN_PASSWORD environment variables are required"
+        )
 
     return {
-        'base_url': base_url.rstrip('/'),
-        'auth': HTTPBasicAuth(username, password),
-        'verify_ssl': verify_ssl
+        "base_url": base_url.rstrip("/"),
+        "auth": HTTPBasicAuth(username, password),
+        "verify_ssl": verify_ssl,
     }
+
 
 def filter_fields(data, include_fields=None, exclude_fields=None):
     """Filter fields from API response data to reduce context window usage.
@@ -52,9 +58,11 @@ def filter_fields(data, include_fields=None, exclude_fields=None):
         return [filter_single_item(item) for item in data]
     return filter_single_item(data)
 
+
 @mcp.tool()
-def list_hosts(search: str = "", per_page: int = 10, page: int = 1,
-               include_fields: str = "") -> dict:
+def list_hosts(
+    search: str = "", per_page: int = 10, page: int = 1, include_fields: str = ""
+) -> dict:
     """List hosts from Foreman with optional search filter and field filtering.
 
     CONTEXT OPTIMIZATION: Default per_page=10 to prevent overflow.
@@ -69,16 +77,18 @@ def list_hosts(search: str = "", per_page: int = 10, page: int = 1,
         config = get_foreman_config()
         url = f"{config['base_url']}/api/v2/hosts"
 
-        params = {
-            'per_page': per_page,
-            'page': page
-        }
+        params: dict[str, Any] = {"per_page": per_page, "page": page}
 
         if search:
-            params['search'] = search
+            params["search"] = search
 
-        response = requests.get(url, auth=config['auth'], params=params,
-                              verify=config['verify_ssl'], timeout=30)
+        response = requests.get(
+            url,
+            auth=config["auth"],
+            params=params,
+            verify=config["verify_ssl"],
+            timeout=30,
+        )
         response.raise_for_status()
 
         result = response.json()
@@ -89,21 +99,31 @@ def list_hosts(search: str = "", per_page: int = 10, page: int = 1,
             pass
         elif include_fields:
             # Return specified fields
-            fields = [f.strip() for f in include_fields.split(',')]
-            result['results'] = filter_fields(result['results'], include_fields=fields)
+            fields = [f.strip() for f in include_fields.split(",")]
+            result["results"] = filter_fields(result["results"], include_fields=fields)
         else:
             # Default essential fields for hosts
             essential_fields = [
-                'id', 'name', 'ip', 'operatingsystem_name', 'location_name',
-                'global_status_label', 'hostgroup_name', 'environment_name',
-                'last_report', 'build_status_label'
+                "id",
+                "name",
+                "ip",
+                "operatingsystem_name",
+                "location_name",
+                "global_status_label",
+                "hostgroup_name",
+                "environment_name",
+                "last_report",
+                "build_status_label",
             ]
-            result['results'] = filter_fields(result['results'], include_fields=essential_fields)
+            result["results"] = filter_fields(
+                result["results"], include_fields=essential_fields
+            )
 
         return result
 
     except (requests.RequestException, ValueError) as e:
         return {"error": f"Failed to list hosts: {str(e)}"}
+
 
 @mcp.tool()
 def get_host(host_id: str) -> dict:
@@ -112,13 +132,16 @@ def get_host(host_id: str) -> dict:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/v2/hosts/{host_id}"
 
-        response = requests.get(url, auth=config['auth'], verify=config['verify_ssl'], timeout=30)
+        response = requests.get(
+            url, auth=config["auth"], verify=config["verify_ssl"], timeout=30
+        )
         response.raise_for_status()
 
         return response.json()
 
     except (requests.RequestException, ValueError) as e:
         return {"error": f"Failed to get host {host_id}: {str(e)}"}
+
 
 @mcp.tool()
 def search_hosts_by_location(location: str, per_page: int = 10) -> dict:
@@ -129,6 +152,7 @@ def search_hosts_by_location(location: str, per_page: int = 10) -> dict:
     search_query = f"location ~ {location}"
     return list_hosts(search=search_query, per_page=per_page)
 
+
 @mcp.tool()
 def search_hosts_by_os(os_name: str, per_page: int = 10) -> dict:
     """Search hosts by operating system (e.g., 'Windows', 'Oracle Linux').
@@ -137,6 +161,7 @@ def search_hosts_by_os(os_name: str, per_page: int = 10) -> dict:
     Use specific OS names like 'Windows Server 2022' for targeted results."""
     search_query = f"os ~ {os_name}"
     return list_hosts(search=search_query, per_page=per_page)
+
 
 @mcp.tool()
 def search_hosts_by_environment(environment: str, per_page: int = 10) -> dict:
@@ -156,10 +181,15 @@ def list_organizations(per_page: int = 15) -> dict:
         config = get_foreman_config()
         url = f"{config['base_url']}/katello/api/organizations"
 
-        params = {'per_page': per_page}
+        params = {"per_page": per_page}
 
-        response = requests.get(url, auth=config['auth'], params=params,
-                              verify=config['verify_ssl'], timeout=30)
+        response = requests.get(
+            url,
+            auth=config["auth"],
+            params=params,
+            verify=config["verify_ssl"],
+            timeout=30,
+        )
         response.raise_for_status()
 
         return response.json()
@@ -177,10 +207,15 @@ def list_locations(per_page: int = 15) -> dict:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/locations"
 
-        params = {'per_page': per_page}
+        params = {"per_page": per_page}
 
-        response = requests.get(url, auth=config['auth'], params=params,
-                              verify=config['verify_ssl'], timeout=30)
+        response = requests.get(
+            url,
+            auth=config["auth"],
+            params=params,
+            verify=config["verify_ssl"],
+            timeout=30,
+        )
         response.raise_for_status()
 
         return response.json()
@@ -198,10 +233,15 @@ def list_hostgroups(per_page: int = 15) -> dict:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/hostgroups"
 
-        params = {'per_page': per_page}
+        params = {"per_page": per_page}
 
-        response = requests.get(url, auth=config['auth'], params=params,
-                              verify=config['verify_ssl'], timeout=30)
+        response = requests.get(
+            url,
+            auth=config["auth"],
+            params=params,
+            verify=config["verify_ssl"],
+            timeout=30,
+        )
         response.raise_for_status()
 
         return response.json()
@@ -226,7 +266,9 @@ def get_host_status(host_id: str) -> dict:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/hosts/{host_id}/status"
 
-        response = requests.get(url, auth=config['auth'], verify=config['verify_ssl'], timeout=30)
+        response = requests.get(
+            url, auth=config["auth"], verify=config["verify_ssl"], timeout=30
+        )
         response.raise_for_status()
 
         return response.json()
@@ -253,10 +295,15 @@ def list_subnets(per_page: int = 15) -> dict:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/subnets"
 
-        params = {'per_page': per_page}
+        params = {"per_page": per_page}
 
-        response = requests.get(url, auth=config['auth'], params=params,
-                              verify=config['verify_ssl'], timeout=30)
+        response = requests.get(
+            url,
+            auth=config["auth"],
+            params=params,
+            verify=config["verify_ssl"],
+            timeout=30,
+        )
         response.raise_for_status()
 
         return response.json()
@@ -272,7 +319,9 @@ def get_subnet(subnet_id: str) -> dict:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/subnets/{subnet_id}"
 
-        response = requests.get(url, auth=config['auth'], verify=config['verify_ssl'], timeout=30)
+        response = requests.get(
+            url, auth=config["auth"], verify=config["verify_ssl"], timeout=30
+        )
         response.raise_for_status()
 
         return response.json()
@@ -290,10 +339,15 @@ def list_domains(per_page: int = 15) -> dict:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/domains"
 
-        params = {'per_page': per_page}
+        params = {"per_page": per_page}
 
-        response = requests.get(url, auth=config['auth'], params=params,
-                              verify=config['verify_ssl'], timeout=30)
+        response = requests.get(
+            url,
+            auth=config["auth"],
+            params=params,
+            verify=config["verify_ssl"],
+            timeout=30,
+        )
         response.raise_for_status()
 
         return response.json()
@@ -309,7 +363,9 @@ def get_domain(domain_id: str) -> dict:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/domains/{domain_id}"
 
-        response = requests.get(url, auth=config['auth'], verify=config['verify_ssl'], timeout=30)
+        response = requests.get(
+            url, auth=config["auth"], verify=config["verify_ssl"], timeout=30
+        )
         response.raise_for_status()
 
         return response.json()
@@ -327,10 +383,15 @@ def list_smart_proxies(per_page: int = 15) -> dict:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/smart_proxies"
 
-        params = {'per_page': per_page}
+        params = {"per_page": per_page}
 
-        response = requests.get(url, auth=config['auth'], params=params,
-                              verify=config['verify_ssl'], timeout=30)
+        response = requests.get(
+            url,
+            auth=config["auth"],
+            params=params,
+            verify=config["verify_ssl"],
+            timeout=30,
+        )
         response.raise_for_status()
 
         return response.json()
@@ -346,7 +407,9 @@ def get_smart_proxy(proxy_id: str) -> dict:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/smart_proxies/{proxy_id}"
 
-        response = requests.get(url, auth=config['auth'], verify=config['verify_ssl'], timeout=30)
+        response = requests.get(
+            url, auth=config["auth"], verify=config["verify_ssl"], timeout=30
+        )
         response.raise_for_status()
 
         return response.json()
@@ -364,10 +427,15 @@ def list_operatingsystems(per_page: int = 15) -> dict:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/v2/operatingsystems"
 
-        params = {'per_page': per_page}
+        params = {"per_page": per_page}
 
-        response = requests.get(url, auth=config['auth'], params=params,
-                              verify=config['verify_ssl'], timeout=30)
+        response = requests.get(
+            url,
+            auth=config["auth"],
+            params=params,
+            verify=config["verify_ssl"],
+            timeout=30,
+        )
         response.raise_for_status()
 
         return response.json()
@@ -383,7 +451,9 @@ def get_operatingsystem(os_id: str) -> dict:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/v2/operatingsystems/{os_id}"
 
-        response = requests.get(url, auth=config['auth'], verify=config['verify_ssl'], timeout=30)
+        response = requests.get(
+            url, auth=config["auth"], verify=config["verify_ssl"], timeout=30
+        )
         response.raise_for_status()
 
         return response.json()
@@ -401,10 +471,15 @@ def list_architectures(per_page: int = 10) -> dict:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/v2/architectures"
 
-        params = {'per_page': per_page}
+        params = {"per_page": per_page}
 
-        response = requests.get(url, auth=config['auth'], params=params,
-                              verify=config['verify_ssl'], timeout=30)
+        response = requests.get(
+            url,
+            auth=config["auth"],
+            params=params,
+            verify=config["verify_ssl"],
+            timeout=30,
+        )
         response.raise_for_status()
 
         return response.json()
@@ -420,7 +495,9 @@ def get_architecture(arch_id: str) -> dict:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/v2/architectures/{arch_id}"
 
-        response = requests.get(url, auth=config['auth'], verify=config['verify_ssl'], timeout=30)
+        response = requests.get(
+            url, auth=config["auth"], verify=config["verify_ssl"], timeout=30
+        )
         response.raise_for_status()
 
         return response.json()
@@ -438,10 +515,15 @@ def list_media(per_page: int = 15) -> dict:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/v2/media"
 
-        params = {'per_page': per_page}
+        params = {"per_page": per_page}
 
-        response = requests.get(url, auth=config['auth'], params=params,
-                              verify=config['verify_ssl'], timeout=30)
+        response = requests.get(
+            url,
+            auth=config["auth"],
+            params=params,
+            verify=config["verify_ssl"],
+            timeout=30,
+        )
         response.raise_for_status()
 
         return response.json()
@@ -457,7 +539,9 @@ def get_media(media_id: str) -> dict:
         config = get_foreman_config()
         url = f"{config['base_url']}/api/v2/media/{media_id}"
 
-        response = requests.get(url, auth=config['auth'], verify=config['verify_ssl'], timeout=30)
+        response = requests.get(
+            url, auth=config["auth"], verify=config["verify_ssl"], timeout=30
+        )
         response.raise_for_status()
 
         return response.json()
@@ -480,10 +564,15 @@ def list_content_views(per_page: int = 10, include_fields: str = "") -> dict:
         config = get_foreman_config()
         url = f"{config['base_url']}/katello/api/content_views"
 
-        params = {'per_page': per_page}
+        params = {"per_page": per_page}
 
-        response = requests.get(url, auth=config['auth'], params=params,
-                              verify=config['verify_ssl'], timeout=30)
+        response = requests.get(
+            url,
+            auth=config["auth"],
+            params=params,
+            verify=config["verify_ssl"],
+            timeout=30,
+        )
         response.raise_for_status()
 
         result = response.json()
@@ -494,15 +583,22 @@ def list_content_views(per_page: int = 10, include_fields: str = "") -> dict:
             pass
         elif include_fields:
             # Return specified fields
-            fields = [f.strip() for f in include_fields.split(',')]
-            result['results'] = filter_fields(result['results'], include_fields=fields)
+            fields = [f.strip() for f in include_fields.split(",")]
+            result["results"] = filter_fields(result["results"], include_fields=fields)
         else:
             # Default essential fields for content views
             essential_fields = [
-                'id', 'name', 'version_count', 'latest_version', 'composite',
-                'default', 'organization'
+                "id",
+                "name",
+                "version_count",
+                "latest_version",
+                "composite",
+                "default",
+                "organization",
             ]
-            result['results'] = filter_fields(result['results'], include_fields=essential_fields)
+            result["results"] = filter_fields(
+                result["results"], include_fields=essential_fields
+            )
 
         return result
 
@@ -517,7 +613,9 @@ def get_content_view(cv_id: str) -> dict:
         config = get_foreman_config()
         url = f"{config['base_url']}/katello/api/content_views/{cv_id}"
 
-        response = requests.get(url, auth=config['auth'], verify=config['verify_ssl'], timeout=30)
+        response = requests.get(
+            url, auth=config["auth"], verify=config["verify_ssl"], timeout=30
+        )
         response.raise_for_status()
 
         return response.json()
@@ -540,10 +638,15 @@ def list_repositories(per_page: int = 5, include_fields: str = "") -> dict:
         config = get_foreman_config()
         url = f"{config['base_url']}/katello/api/repositories"
 
-        params = {'per_page': per_page}
+        params = {"per_page": per_page}
 
-        response = requests.get(url, auth=config['auth'], params=params,
-                              verify=config['verify_ssl'], timeout=30)
+        response = requests.get(
+            url,
+            auth=config["auth"],
+            params=params,
+            verify=config["verify_ssl"],
+            timeout=30,
+        )
         response.raise_for_status()
 
         result = response.json()
@@ -554,15 +657,23 @@ def list_repositories(per_page: int = 5, include_fields: str = "") -> dict:
             pass
         elif include_fields:
             # Return specified fields
-            fields = [f.strip() for f in include_fields.split(',')]
-            result['results'] = filter_fields(result['results'], include_fields=fields)
+            fields = [f.strip() for f in include_fields.split(",")]
+            result["results"] = filter_fields(result["results"], include_fields=fields)
         else:
             # Default essential fields for repositories
             essential_fields = [
-                'id', 'name', 'content_type', 'url', 'product', 'content_view',
-                'last_sync', 'content_counts'
+                "id",
+                "name",
+                "content_type",
+                "url",
+                "product",
+                "content_view",
+                "last_sync",
+                "content_counts",
             ]
-            result['results'] = filter_fields(result['results'], include_fields=essential_fields)
+            result["results"] = filter_fields(
+                result["results"], include_fields=essential_fields
+            )
 
         return result
 
@@ -577,7 +688,9 @@ def get_repository(repo_id: str) -> dict:
         config = get_foreman_config()
         url = f"{config['base_url']}/katello/api/repositories/{repo_id}"
 
-        response = requests.get(url, auth=config['auth'], verify=config['verify_ssl'], timeout=30)
+        response = requests.get(
+            url, auth=config["auth"], verify=config["verify_ssl"], timeout=30
+        )
         response.raise_for_status()
 
         return response.json()
@@ -587,8 +700,9 @@ def get_repository(repo_id: str) -> dict:
 
 
 @mcp.tool()
-def list_lifecycle_environments(organization_id: str, per_page: int = 15,
-                               include_fields: str = "") -> dict:
+def list_lifecycle_environments(
+    organization_id: str, per_page: int = 15, include_fields: str = ""
+) -> dict:
     """List all lifecycle environments for a specific organization in Foreman/Katello.
 
     CONTEXT OPTIMIZATION: 16 total environments. Safe for context window.
@@ -605,10 +719,15 @@ def list_lifecycle_environments(organization_id: str, per_page: int = 15,
         config = get_foreman_config()
         url = f"{config['base_url']}/katello/api/organizations/{organization_id}/environments"
 
-        params = {'per_page': per_page}
+        params = {"per_page": per_page}
 
-        response = requests.get(url, auth=config['auth'], params=params,
-                              verify=config['verify_ssl'], timeout=30)
+        response = requests.get(
+            url,
+            auth=config["auth"],
+            params=params,
+            verify=config["verify_ssl"],
+            timeout=30,
+        )
         response.raise_for_status()
 
         result = response.json()
@@ -619,21 +738,31 @@ def list_lifecycle_environments(organization_id: str, per_page: int = 15,
             pass
         elif include_fields:
             # Return specified fields
-            fields = [f.strip() for f in include_fields.split(',')]
-            result['results'] = filter_fields(result['results'], include_fields=fields)
+            fields = [f.strip() for f in include_fields.split(",")]
+            result["results"] = filter_fields(result["results"], include_fields=fields)
         else:
             # Default essential fields for lifecycle environments
             essential_fields = [
-                'id', 'name', 'label', 'description', 'library',
-                'organization', 'prior', 'successor'
+                "id",
+                "name",
+                "label",
+                "description",
+                "library",
+                "organization",
+                "prior",
+                "successor",
             ]
-            result['results'] = filter_fields(result['results'], include_fields=essential_fields)
+            result["results"] = filter_fields(
+                result["results"], include_fields=essential_fields
+            )
 
         return result
 
     except (requests.RequestException, ValueError) as e:
-        return {"error": f"Failed to list lifecycle environments for org "
-                         f"{organization_id}: {str(e)}"}
+        return {
+            "error": f"Failed to list lifecycle environments for org "
+            f"{organization_id}: {str(e)}"
+        }
 
 
 @mcp.tool()
@@ -643,13 +772,16 @@ def get_lifecycle_environment(env_id: str) -> dict:
         config = get_foreman_config()
         url = f"{config['base_url']}/katello/api/environments/{env_id}"
 
-        response = requests.get(url, auth=config['auth'], verify=config['verify_ssl'], timeout=30)
+        response = requests.get(
+            url, auth=config["auth"], verify=config["verify_ssl"], timeout=30
+        )
         response.raise_for_status()
 
         return response.json()
 
     except (requests.RequestException, ValueError) as e:
         return {"error": f"Failed to get lifecycle environment {env_id}: {str(e)}"}
+
 
 def main() -> None:
     """Main entry point for the server."""
